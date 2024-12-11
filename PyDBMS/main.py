@@ -1,9 +1,8 @@
+import os
+
 import Commands
 import User_Prompts
 import Tokenizer
-
-#Databases will function as global objects in main
-Database = []
 
 def intro_prompt():
     print("")
@@ -40,6 +39,7 @@ def intro_prompt():
     intro_prompt()
 
 def Database_Management_System(account_validator: True):
+    conn = Commands.Connection()
     while account_validator is True:
         query = input()
         if query == "Exit" or query == "exit" or query == "EXIT":
@@ -47,7 +47,6 @@ def Database_Management_System(account_validator: True):
         query = Tokenizer.Tokenize(query)
         if len(query) == 1:
             print("Error: Invalid user query")
-            Database_Management_System(account_validator)
 
         """
         Handling CREATE statements
@@ -56,18 +55,37 @@ def Database_Management_System(account_validator: True):
             query.pop(0)
             if query[0] == "DATABASE":
                 query.pop(0)
-                db = Commands.Database().create_database(query)
-                Database.append(db.name)
-                Database_Management_System(account_validator)
+                Commands.Database().create_database(query)
             if query[0] == "TABLE":
                 query.pop(0)
                 Commands.Table().create_table(query)
-                Database_Management_System(account_validator)
+            if query[0] == "CONNECTION":
+                query.pop(0)
+                conn.create_connection(query)
 
-        if query[0] == "LIST":
+        """
+        Handling DELETE Statements
+        """
+        if query[0] == "DELETE":
             query.pop(0)
+            if query[0] == "DATABASE":
+                query.pop(0)
+                Commands.Database().delete_database(query)
+
+        """
+        Handling SHOW Statements
+        """
+        if query[0] == "SHOW":
+            query.pop(0)
+            databases = []
             if query[0] == "DATABASES":
-                print(Database)
+                for i in os.listdir(os.getcwd()):
+                    if ".db" in i:
+                        databases.append(i)
+                print(databases)
+            if query[0] == "CONNECTIONS":
+                pass
+
 
 def __main__():
     account_validator = intro_prompt()
@@ -76,6 +94,7 @@ def __main__():
         User_Prompts.table_prompt()
         Database_Management_System(account_validator)
     else:
+        print("Account could not be validated")
         print("Exiting Database Management System")
 
 __main__()
